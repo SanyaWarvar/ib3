@@ -21,13 +21,12 @@ func (h *Handler) userSecretIdentity(c *gin.Context) {
 		return
 	}
 
-	value, err := h.services.ICacheService.GetSecret(secretHeader)
+	value, err := h.services.ICacheService.GetSecret(header)
 	if err != nil {
-		if header == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"details": "bad or exp secret header"})
-			return
-		}
+		c.JSON(http.StatusBadRequest, gin.H{"details": err.Error()})
+		return
 	}
+
 	c.Set(userSecret, value)
 }
 

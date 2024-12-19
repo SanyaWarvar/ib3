@@ -3,13 +3,26 @@ package service
 import (
 	"math/big"
 
+	"github.com/SanyaWarvar/ib3/pkg/models"
 	"github.com/SanyaWarvar/ib3/pkg/repository"
+	"github.com/google/uuid"
 )
 
 type IUserService interface {
+	CreateUser(models.User) error
+	HashPassword(password string) (string, error)
+	GetUserByUP(user models.User) (models.User, error)
+	GetUserByU(username string) (models.User, error)
 }
 
 type IJwtManagerService interface {
+	GeneratePairToken(userId uuid.UUID) (string, string, uuid.UUID, error)
+	CompareTokens(refreshId uuid.UUID, token string) bool
+	SaveRefreshToken(hashedToken string, userId, tokenId uuid.UUID) error
+	DeleteRefreshTokenById(tokenId uuid.UUID) error
+	GetRefreshTokenById(tokenId uuid.UUID) (string, error)
+	ParseToken(accessToken string) (*models.AccessTokenClaims, error)
+	CheckRefreshTokenExp(tokenId uuid.UUID) bool
 }
 
 type ICacheService interface {
@@ -25,6 +38,8 @@ type Service struct {
 
 func NewService(repos *repository.Repository) *Service {
 	return &Service{
-		ICacheService: NewCacheService(repos.ICacheRepo),
+		IUserService:       NewUserService(repos.IUserRepo),
+		ICacheService:      NewCacheService(repos.ICacheRepo),
+		IJwtManagerService: NewJwtManagerService(repos.IJwtManagerRepo),
 	}
 }

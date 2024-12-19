@@ -20,10 +20,17 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
 	router.POST("/keys", h.keys)
+	crp := router.Group("/crypto", h.userSecretIdentity)
+	{
+		crp.POST("/encrypt", h.encrypt)
+		crp.POST("/decrypt", h.decrypt)
+	}
 
 	auth := router.Group("/auth", h.userSecretIdentity)
 	{
-		auth.POST("/sign_up", h.sign_up)
+		auth.POST("/sign_up", h.signUp)
+		auth.POST("/sign_in", h.signIn)
+		auth.POST("/refresh", h.refreshToken)
 	}
 	return router
 }

@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/SanyaWarvar/ib3/pkg/handler"
 	"github.com/SanyaWarvar/ib3/pkg/models"
 	"github.com/SanyaWarvar/ib3/pkg/repository"
 	"github.com/SanyaWarvar/ib3/pkg/service"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
@@ -16,6 +18,7 @@ import (
 )
 
 func main() {
+
 	logrus.SetFormatter(new(logrus.JSONFormatter))
 
 	if err := godotenv.Load(".env"); err != nil {
@@ -50,7 +53,17 @@ func main() {
 		logrus.Fatalf("Error while create connection to cache: %s", err.Error())
 	}
 
-	repos := repository.NewRepository(db, cacheDb)
+	accessTokenTTL, err := time.ParseDuration(os.Getenv("ACCESSTOKENTTL"))
+	if err != nil {
+		logrus.Fatalf("Errof while parse accessTokenTTL: %s", err.Error())
+	}
+	refreshTokenTTL, err := time.ParseDuration(os.Getenv("REFRESHTOKENTTL"))
+	if err != nil {
+		logrus.Fatalf("Errof while parse refreshTokenTTL: %s", err.Error())
+	}
+	jwtCfg := repository.NewJwtManagerCfg(accessTokenTTL, refreshTokenTTL, os.Getenv("SIGNINGKEY"), jwt.SigningMethodHS256)
+
+	repos := repository.NewRepository(db, cacheDb, jwtCfg)
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
 	srv := new(models.Server)
