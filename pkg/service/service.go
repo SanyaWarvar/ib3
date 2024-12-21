@@ -30,10 +30,20 @@ type ICacheService interface {
 	GetSecret(secretId string) (*big.Int, error)
 }
 
+type IReviewService interface {
+	CreateReview(review models.Review, userId uuid.UUID) error
+	EditReview(new models.ReviewInput, userId, reviewId uuid.UUID) error
+	DeleteReview(reviewId, userId uuid.UUID) error
+
+	GetAllReviewByF(filmTitle string) ([]models.ReviewOutput, error)
+	GetAllReview() ([]models.Film, error)
+}
+
 type Service struct {
 	IUserService
 	IJwtManagerService
 	ICacheService
+	IReviewService
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -41,5 +51,6 @@ func NewService(repos *repository.Repository) *Service {
 		IUserService:       NewUserService(repos.IUserRepo),
 		ICacheService:      NewCacheService(repos.ICacheRepo),
 		IJwtManagerService: NewJwtManagerService(repos.IJwtManagerRepo),
+		IReviewService:     NewReviewService(repos.IReviewRepo),
 	}
 }

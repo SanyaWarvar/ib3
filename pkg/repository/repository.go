@@ -37,10 +37,20 @@ type IJwtManagerRepo interface {
 	CheckRefreshTokenExp(tokenId uuid.UUID) bool
 }
 
+type IReviewRepo interface {
+	CreateReview(review models.Review, userId uuid.UUID) error
+	EditReview(new models.ReviewInput, userId, reviewId uuid.UUID) error
+	DeleteReview(reviewId, userId uuid.UUID) error
+
+	GetAllReviewByF(filmTitle string) ([]models.ReviewOutput, error)
+	GetAllReview() ([]models.Film, error)
+}
+
 type Repository struct {
 	IUserRepo
 	ICacheRepo
 	IJwtManagerRepo
+	IReviewRepo
 }
 
 func NewRepository(db *sqlx.DB, cache *redis.Client, cfg *JwtManagerCfg) *Repository {
@@ -48,5 +58,6 @@ func NewRepository(db *sqlx.DB, cache *redis.Client, cfg *JwtManagerCfg) *Reposi
 		IUserRepo:       NewUserPostgres(db),
 		ICacheRepo:      NewCacheRedis(cache),
 		IJwtManagerRepo: NewJwtManagerPostgres(db, cfg),
+		IReviewRepo:     NewReviewPostgres(db),
 	}
 }

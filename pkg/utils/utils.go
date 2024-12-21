@@ -53,9 +53,14 @@ func DecryptStruct(s interface{}, key []byte) error {
 		}
 
 		// Декодируем зашифрованные данные
-		ciphertext := field.Interface().(string)
+		ciphertext := field.String()
+		if ciphertext == "" {
+			continue
+		}
 		data, _ := hex.DecodeString(ciphertext)
+
 		plaintext, err := Decrypt(data, key)
+
 		if err != nil {
 			return err
 		}

@@ -20,7 +20,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
 	router.POST("/keys", h.keys)
-	crp := router.Group("/crypto", h.userSecretIdentity)
+	router.Static("/covers", "./covers")
+	crp := router.Group("/api", h.userSecretIdentity)
 	{
 		crp.POST("/encrypt", h.encrypt)
 		crp.POST("/decrypt", h.decrypt)
@@ -31,6 +32,15 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/sign_up", h.signUp)
 		auth.POST("/sign_in", h.signIn)
 		auth.POST("/refresh", h.refreshToken)
+	}
+
+	router.GET("api/review/all", h.getAllReviews)
+	router.GET("api/review/film/:title", h.getFilmReview)
+	review := crp.Group("/review", h.userIdentity)
+	{
+		review.POST("/", h.createReview)
+		review.PUT("/:id", h.editReview)
+		review.DELETE("/:id", h.deleteReview)
 	}
 	return router
 }

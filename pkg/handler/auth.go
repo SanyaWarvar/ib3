@@ -31,14 +31,17 @@ func (h *Handler) signUp(c *gin.Context) {
 	}
 
 	secret := secretAny.(*big.Int)
-	utils.DecryptStruct(&input, secret.Bytes())
-	fmt.Println(input)
+	err := utils.DecryptStruct(&input, secret.Bytes())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"details": err.Error()})
+		return
+	}
 	user := models.User{
 		Id:       uuid.New(),
 		Username: input.Username,
 		Password: input.Password,
 	}
-	err := h.services.IUserService.CreateUser(user)
+	err = h.services.IUserService.CreateUser(user)
 	if err != nil {
 		errorMessage := ""
 		if strings.Contains(err.Error(), "username") {

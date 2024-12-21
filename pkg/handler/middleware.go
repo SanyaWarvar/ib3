@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"errors"
+	"math/big"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 const (
@@ -30,18 +34,26 @@ func (h *Handler) userSecretIdentity(c *gin.Context) {
 	c.Set(userSecret, value)
 }
 
-/*
+func getSecret(c *gin.Context) (*big.Int, error) {
+	secretAny, ok := c.Get("userSecret")
+	if !ok {
+		return nil, errors.New("user secret not found")
+	}
+
+	return secretAny.(*big.Int), nil
+}
+
 func (h *Handler) userIdentity(c *gin.Context) {
 	header := c.GetHeader(authorizationHeader)
 
 	if header == "" {
-		newErrorResponse(c, http.StatusUnauthorized, "Empty auth header")
+		c.JSON(http.StatusUnauthorized, "Empty auth header")
 		return
 	}
 
 	headerParts := strings.Split(header, " ")
 	if len(headerParts) != 2 {
-		newErrorResponse(c, http.StatusUnauthorized, "Invalid auth header")
+		c.JSON(http.StatusUnauthorized, "Invalid auth header")
 		return
 	}
 
@@ -54,19 +66,16 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	c.Set(userCtx, accessToken.UserId)
 }
 
-func getUserId(c *gin.Context, withMessage bool) (uuid.UUID, error) {
+func getUserId(c *gin.Context) (uuid.UUID, error) {
 	userId, ok := c.Get(userCtx)
-	if !ok && withMessage {
-		c.JSON(http.StatusBadRequest, gin.H{"details": "user id not found"})
+	if !ok {
 		return [16]byte{}, errors.New("user id not found")
 	}
 
 	idInt, ok := userId.(uuid.UUID)
-	if !ok && withMessage {
-		c.JSON(http.StatusBadRequest, gin.H{"details": "user id is invalid"})
+	if !ok {
 		return [16]byte{}, errors.New("user id is invalid")
 	}
 
 	return idInt, nil
 }
-*/
